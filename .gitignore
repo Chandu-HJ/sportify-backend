@@ -1,0 +1,20 @@
+# Spring Boot
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.class
+*.log
+
+# Eclipse/STS
+.project
+.classpath
+.settings/
+*.springBeans
+
+# IntelliJ (if used elsewhere)
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Mac
+.DS_Store
