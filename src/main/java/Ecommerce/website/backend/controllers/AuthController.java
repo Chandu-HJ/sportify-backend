@@ -40,7 +40,7 @@ public class AuthController {
 				cookie.setHttpOnly(true);
 				cookie.setSecure(false);
 				cookie.setPath("/");
-				cookie.setMaxAge(3600);
+				cookie.setMaxAge(24 * 3600);
 				response.addCookie(cookie);
 				
 				Map<String, String> responseBody = new HashMap<>();
