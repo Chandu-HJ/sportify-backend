@@ -51,5 +51,11 @@ public class ProductService {
 		return imageUrls;
 	}
 	
+	public int getStock(Integer productId) {
+		Product product = productRepo.findById(productId).orElseThrow (() -> new IllegalArgumentException("Product not found"));
+		
+		return product.getStock();
+	}
+	
 	
 }

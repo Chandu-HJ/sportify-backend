@@ -5,6 +5,7 @@ import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,7 +17,7 @@ import Ecommerce.website.backend.Entities.ProductImage;
 import Ecommerce.website.backend.Entities.User;
 import Ecommerce.website.backend.service.ProductService;
 import jakarta.servlet.http.HttpServletRequest;
-
+//@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/customer/products")
 public class ProductController {

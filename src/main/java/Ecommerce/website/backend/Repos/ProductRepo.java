@@ -10,5 +10,7 @@ import Ecommerce.website.backend.Entities.Product;
 @Repository
 public interface ProductRepo extends JpaRepository<Product, Integer> {
 	List<Product> findByCategory_CategoryId(Integer categoryId);
+	
+	
 
 }
