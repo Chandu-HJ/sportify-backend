@@ -18,6 +18,8 @@ import Ecommerce.website.backend.Entities.User;
 import Ecommerce.website.backend.service.ProductService;
 import jakarta.servlet.http.HttpServletRequest;
 //@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+
+
 @RestController
 @RequestMapping("/api/customer/products")
 public class ProductController {
