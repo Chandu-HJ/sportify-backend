@@ -17,6 +17,8 @@ public interface CartRepo extends JpaRepository<Cart, Integer> {
 	@Query("SELECT c FROM Cart c WHERE c.user.id = :userId AND c.product.productId = :productId")
 	Optional<Cart> findByUserAndProduct(Integer userId, Integer productId);
 	
+	
+	
 	@Query("SELECT COALESCE(SUM(c.quantity), 0) FROM Cart c WHERE c.user.id = :userId")
 	int countTotalItems(int userId);
 	
@@ -28,4 +30,9 @@ public interface CartRepo extends JpaRepository<Cart, Integer> {
 	@Transactional
 	@Query("DELETE FROM Cart c WHERE c.user.id = :userId")
 	void deleteAllByUserId(int userId);
+	
+	@Modifying
+	@Transactional
+	@Query("DELETE FROM Cart c WHERE c.user.id = :userId AND c.product.productId = :productId")
+	void deleteByUserIdAndProductId(int userId, int productId);
 }

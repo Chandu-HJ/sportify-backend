@@ -42,38 +42,56 @@ public class PaymentController {
 	private ProductService productService;
 	
 	@PostMapping("/create")
-	public ResponseEntity<Map<String, Object>> createPayment(@RequestBody Map<String,Object> requestBody, HttpServletRequest request) {
-		try {
-			User user = (User) request.getAttribute("authenticatedUser");
-			if(user == null) {
-				throw new IllegalArgumentException("User is not Authorized");
-			}
-			BigDecimal totalAmount = new BigDecimal((String) requestBody.get("totalAmount"));
-			
-			List<Map<String, Object>> itemsRaw = (List<Map<String, Object>>) requestBody.get("cartItems");
-			List<OrderItem> items = itemsRaw.stream().map((item) -> {
-				OrderItem oItem = new OrderItem();
-				oItem.setProduct(productService.getproductById((int) item.get("productId")));
-				oItem.setPricePerUnit(new BigDecimal((String) item.get("price")));
-				oItem.setQuantity((int) item.get("quantity"));
-				oItem.setTotalPrice(oItem.getPricePerUnit().multiply(BigDecimal.valueOf(oItem.getQuantity())));
-				
-				return oItem;
-			}).collect(Collectors.toList());
-			
-			String razorpayOrderId = service.createOrder(user.getId(), totalAmount, items);
-			
-			return ResponseEntity.created(null).body(Map.of("orderId", razorpayOrderId));
-		}
-		catch(RazorpayException e) {
-			e.printStackTrace();
-			return ResponseEntity.status(402).body(Map.of("error","RazorPay Conflict"));
-		}
-		catch(Exception e){
-			e.printStackTrace();
-			return ResponseEntity.status(402).body(Map.of("errror",e.getMessage()));
-		}
+	public ResponseEntity<?> createPayment(@RequestBody Map<String,Object> requestBody, HttpServletRequest request) {
+	    try {
+	        User user = (User) request.getAttribute("authenticatedUser");
+	        if(user == null) {
+	            throw new IllegalArgumentException("User is not Authorized");
+	        }
+
+	        // Correct handling of totalAmount
+	        Object totalAmountObj = requestBody.get("totalAmount");
+	        BigDecimal totalAmount;
+	        if (totalAmountObj instanceof Number) {
+	            totalAmount = BigDecimal.valueOf(((Number) totalAmountObj).doubleValue());
+	        } else {
+	            totalAmount = new BigDecimal((String) totalAmountObj);
+	        }
+
+	        // Cart items
+	        List<Map<String, Object>> itemsRaw = (List<Map<String, Object>>) requestBody.get("cartItems");
+	        List<OrderItem> items = itemsRaw.stream().map((item) -> {
+	            OrderItem oItem = new OrderItem();
+	            oItem.setProduct(productService.getproductById((int) item.get("productId")));
+
+	            Object priceObj = item.get("price");
+	            BigDecimal price;
+	            if (priceObj instanceof Number) {
+	                price = BigDecimal.valueOf(((Number) priceObj).doubleValue());
+	            } else {
+	                price = new BigDecimal((String) priceObj);
+	            }
+
+	            oItem.setPricePerUnit(price);
+	            oItem.setQuantity((int) item.get("quantity"));
+	            oItem.setTotalPrice(price.multiply(BigDecimal.valueOf(oItem.getQuantity())));
+	            return oItem;
+	        }).collect(Collectors.toList());
+
+	        String razorpayOrderId = service.createOrder(user.getId(), totalAmount, items);
+
+	        return ResponseEntity.ok(razorpayOrderId);
+	    }
+	    catch(RazorpayException e) {
+	        e.printStackTrace();
+	        return ResponseEntity.status(402).body(Map.of("error","RazorPay Conflict"));
+	    }
+	    catch(Exception e){
+	        e.printStackTrace();
+	        return ResponseEntity.status(402).body(Map.of("error", e.getMessage()));
+	    }
 	}
+
 	
 	
 	@PostMapping("/verify")

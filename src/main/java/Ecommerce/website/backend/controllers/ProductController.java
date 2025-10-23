@@ -29,7 +29,7 @@ public class ProductController {
 	
 	
 	@GetMapping
-	public ResponseEntity<Map<String,Object>> getProducts(@RequestParam(required = false) String categoryName, HttpServletRequest request) {
+	public ResponseEntity<Map<String,Object>> getProducts(@RequestParam(name="category", required = false) String categoryName, HttpServletRequest request) {
 		try {
 			User user = (User) request.getAttribute("authenticatedUser");
 			if(user == null) {

@@ -26,7 +26,8 @@ public class Product {
 	@Column(nullable = false)
 	private Integer stock;
 	
-	
+	@OneToOne
+	private ProductImage image;
 
 	public Integer getStock() {
 		return stock;
@@ -45,6 +46,14 @@ public class Product {
 	
 	@Column(nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
 	private LocalDateTime updatedAt;
+
+	public ProductImage getImage() {
+		return image;
+	}
+
+	public void setImage(ProductImage image) {
+		this.image = image;
+	}
 
 	public Product(Integer productId, String name, String description, BigDecimal price, Integer stock,
 			Category category, LocalDateTime createdAt, LocalDateTime updatedAt) {

@@ -1,141 +1,120 @@
 package Ecommerce.website.backend.controllers;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import Ecommerce.website.backend.Entities.Cart;
+import Ecommerce.website.backend.Entities.Product;
 import Ecommerce.website.backend.Entities.User;
-import Ecommerce.website.backend.Repos.UsersRepo;
 import Ecommerce.website.backend.service.CartService;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/customer/cart")
 public class CartController {
-	
-	@Autowired
-	private CartService service;
 
-	
-	
-	
-	@GetMapping("/count")
-	public ResponseEntity<Map<String, Object>> getItemsCount(HttpServletRequest request) {
-		
-		try {
-			User user = (User) request.getAttribute("authenticatedUser");
-			Map<String,Object> response = new HashMap<>();
-			 response.put("count",service.getItemsCount(user.getUsername()));
-			 
-			 return ResponseEntity.ok(response);
-		}
-		catch(IllegalArgumentException e) {
-			return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-		}
-	}
-	
-	@PostMapping("/add")
-	public ResponseEntity<?> addItems(@RequestBody Map<String, Object> request) {
-		try {
-			String username =(String) request.get("username");
-			int productId = (int) request.get("productId");
-			
-			
-			
-			if(request.containsKey("quantity")) {
-				int quantity = (int)request.get("quantity");
-				service.addItem(username, productId, quantity);
-				return ResponseEntity.status(HttpStatus.CREATED).build();
-				
-			}
-			service.addItem(username, productId, 1);
-			return ResponseEntity.status(HttpStatus.CREATED).build();
-		}
-		catch(IllegalArgumentException e) {
-			return ResponseEntity.badRequest().body(Map.of("error" , e.getMessage() ));
-		}
-		
-	}
-	
-	@GetMapping("/items")
-	public ResponseEntity<Map<String, Object>> getAllItems(HttpServletRequest request) {
-		try {
-			User user = (User)request.getAttribute("authenticatedUser");
-			Map<String, Object> response = new HashMap<>();
-			List<Map<String, Object>> list = new ArrayList<>();
-			
-			List<Cart> items = service.getAllItems(user.getId());
-			BigDecimal overAllTotal = BigDecimal.ZERO;
-			for(Cart c: items) {
-				Map<String, Object> map = new HashMap<>();
-				map.put("productId", c.getProduct().getProductId());
-				map.put("pricePerItem", c.getProduct().getPrice());
-				map.put("quantity", c.getQuantity());
-				map.put("totalPrice", c.getProduct().getPrice().multiply(BigDecimal.valueOf(c.getQuantity())));
-				overAllTotal = overAllTotal.add((BigDecimal) map.get("totalPrice"));
-				list.add(map);
-			}
-			
-			response.put("username", user.getUsername());
-			response.put("items", list);
-			response.put("grandTotal", overAllTotal);
-			
-			return ResponseEntity.ok(response);
-		}
-		catch(Exception e) {
-			return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-		}
-		
-	}
-	
-	@DeleteMapping("/delete")
-	public ResponseEntity<?> deleteItem(@RequestBody Map<String, Object> request) {
-		String userName = (String) request.get("username");
-		int productId = -1;
-		if(request.containsKey("productId"))
-			productId = (int) request.get("productId");
-		
-		try {
-			if(productId == -1) {
-				service.deleteAll(userName);
-			}
-			else {
-				service.delete(userName, productId);
-			}
-			return  ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-		}catch(Exception e) {
-			String mess = e.getMessage();
-			if(mess.equals("user")) {
-				return ResponseEntity.status(400).body(Map.of("error", "User not found with username '" + userName + "'."));
-			}
-			if(mess.equals("product")) {
-				return ResponseEntity.status(404).body(Map.of("error", "Product not found with Id: " + productId));
-			}
-			if(mess.equals("cart")) {
-				return ResponseEntity.status(404).body(Map.of("error", "No Such Items in cart"));
+    @Autowired private CartService service;
 
-			}
-			
-			return ResponseEntity.status(500).body(Map.of("error", "Unexpected Error  " + e.getMessage()));
+    @GetMapping("/count")
+    public ResponseEntity<Map<String, Object>> getItemsCount(HttpServletRequest request) {
+        try {
+            User user = (User) request.getAttribute("authenticatedUser");
+            if (user == null) throw new IllegalArgumentException("Not authenticated");
+            int count = service.getItemsCount(user.getUsername());
+            return ResponseEntity.ok(Map.of("count", count));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 
-		}
-	}
-	
-	
-	
-	
+    @PostMapping("/add")
+    public ResponseEntity<Void> addItem(@RequestBody Map<String, Object> req) {
+        try {
+            String username = (String) req.get("username");
+            int productId = ((Number) req.get("productId")).intValue();
+            int qty = req.containsKey("quantity") ? ((Number) req.get("quantity")).intValue() : 1;
+            service.addItem(username, productId, qty);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<Void> updateItem(@RequestBody Map<String, Object> req) {
+        try {
+            String username = (String) req.get("username");
+            int productId = ((Number) req.get("productId")).intValue();
+            int quantity = ((Number) req.get("quantity")).intValue();
+
+            if (quantity <= 0) {
+                service.deleteCompletely(username, productId);
+            } else {
+                service.setQuantity(username, productId, quantity);
+            }
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/items")
+    public ResponseEntity<Map<String, Object>> getAllItems(HttpServletRequest request) {
+        try {
+            User user = (User) request.getAttribute("authenticatedUser");
+            if (user == null) throw new IllegalArgumentException("Not authenticated");
+
+            List<Cart> carts = service.getAllItems(user.getId());
+            List<Map<String, Object>> items = new ArrayList<>();
+            BigDecimal grandTotal = BigDecimal.ZERO;
+
+            for (Cart c : carts) {
+                Product p = c.getProduct();
+                BigDecimal price = p.getPrice();
+                int qty = c.getQuantity();
+                BigDecimal total = price.multiply(BigDecimal.valueOf(qty));
+
+                Map<String, Object> m = new HashMap<>();
+                m.put("productId", p.getProductId());
+                m.put("name", p.getName());
+                m.put("description", p.getDescription());
+                m.put("imageUrl", (p.getImage()!=null)? p.getImage().getImageUrl() : " ");
+                m.put("pricePerItem", price);
+                m.put("quantity", qty);
+                m.put("totalPrice", total);
+                items.add(m);
+                grandTotal = grandTotal.add(total);
+            }
+
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("username", user.getUsername());
+            resp.put("items", items);
+            resp.put("grandTotal", grandTotal);
+            return ResponseEntity.ok(resp);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteItem(@RequestBody Map<String, Object> req) {
+        try {
+            String username = (String) req.get("username");
+            Integer productId = req.containsKey("productId")
+                    ? ((Number) req.get("productId")).intValue()
+                    : null;
+
+            if (productId == null) {
+                service.deleteAll(username);
+            } else {
+                service.deleteCompletely(username, productId);
+            }
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }
