@@ -1,5 +1,7 @@
 package Ecommerce.website.backend.Entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -9,9 +11,11 @@ public class ProductImage {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer imageId;
 	
-	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@JoinColumn(name = "product_id",nullable = false)
-	private Product product;
+	// owning side: stores FK product_id
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false, unique = true)
+    @JsonIgnore
+    private Product product;
 	
 	@Column(nullable = false, columnDefinition = "TEXT")
 	private String imageUrl;

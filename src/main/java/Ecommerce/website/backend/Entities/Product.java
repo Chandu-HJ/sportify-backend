@@ -26,16 +26,11 @@ public class Product {
 	@Column(nullable = false)
 	private Integer stock;
 	
-	@OneToOne
-	private ProductImage image;
+	   // inverse side; ProductImage owns the relationship via product_id
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private ProductImage image;
 
-	public Integer getStock() {
-		return stock;
-	}
-
-	public void setStock(Integer stock) {
-		this.stock = stock;
-	}
+	
 
 	@ManyToOne
 	@JoinColumn(name = "category_id")
@@ -49,6 +44,13 @@ public class Product {
 
 	public ProductImage getImage() {
 		return image;
+	}
+	public Integer getStock() {
+		return stock;
+	}
+
+	public void setStock(Integer stock) {
+		this.stock = stock;
 	}
 
 	public void setImage(ProductImage image) {

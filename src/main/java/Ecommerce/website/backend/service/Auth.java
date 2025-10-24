@@ -2,6 +2,7 @@ package Ecommerce.website.backend.service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import javax.crypto.SecretKey;
@@ -10,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import Ecommerce.website.backend.Entities.JWTToken;
 import Ecommerce.website.backend.Entities.User;
+import Ecommerce.website.backend.Repos.JWTTokenRepo;
 import Ecommerce.website.backend.Repos.UsersRepo;
 import Ecommerce.website.backend.config.AppConfig;
 import io.jsonwebtoken.Claims;
@@ -35,7 +38,11 @@ public class Auth {
 		this.passwordEncoder = passwordEncoder;
 		this.appConfig = appConfig;
     }
+    
+    @Autowired
+    private JWTTokenRepo jwtRepo;
 
+  
    
     public User authenticate(String userName, String password) {
         User user = userRepo.findByUsername(userName)
@@ -59,15 +66,24 @@ public class Auth {
 //    	Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512); 
 
 
+        JWTToken jwtToken = new JWTToken();
+        jwtToken.setUser(user);
+        jwtToken.setExpiresAt(LocalDateTime.now().plusHours(24));
+        
 
-
-        return Jwts.builder()
+        String token =Jwts.builder()
                 .setSubject(user.getUsername())
                 .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() +(24* 3600000))) // 1 hour
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
+        
+        jwtToken.setToken(token);
+        
+        jwtRepo.save(jwtToken);
+        return token;
+        
     }
     
     public boolean validateToken(String token) {
@@ -104,6 +120,11 @@ public class Auth {
         } catch (Exception e) {
             return null;
         }
+    }
+    
+    public void deleteToken(User user) {
+    	
+    		jwtRepo.deleteByUserId(user.getId());
     }
 
 

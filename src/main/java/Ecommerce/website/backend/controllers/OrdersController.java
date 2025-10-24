@@ -26,21 +26,21 @@ public class OrdersController {
 	private UsersService userService;
 	
 	@GetMapping
-	public ResponseEntity<?> getOrders(@RequestBody Map<String,Object> requestBody, HttpServletRequest request) {
+	public ResponseEntity<?> getOrders(HttpServletRequest request) {
 		try {
 			User user = (User) request.getAttribute("authenticatedUser");
 			if(user == null) {
 				return ResponseEntity.status(401).body(Map.of("error", "user not authenticated"));
 			}
 			
-			String username = (String) requestBody.get("username");
+			String username = user.getUsername();
 			
 			Map<String, Object> response = service.getOrderItems(username);
 			return ResponseEntity.ok(response);
 			
 		}
 		catch(IllegalArgumentException e) {
-			return ResponseEntity.status(400).body(Map.of("error" , e.getMessage()));
+			return ResponseEntity.status(500).body(Map.of("error" , e.getMessage()));
 		}
 		catch(Exception e) {
 			return ResponseEntity.status(500).body(Map.of("error", "Internal Server error"));

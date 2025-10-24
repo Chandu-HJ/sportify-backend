@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import Ecommerce.website.backend.dto.LoginRequest;
 import Ecommerce.website.backend.service.Auth;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
@@ -51,6 +52,27 @@ public class AuthController {
 			}
 			catch(RuntimeException e) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+			}
+		}
+		
+		@PostMapping("/logout")
+		public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+			try {
+				User user = (User) request.getAttribute("authenticatedUser");
+				authService.deleteToken(user);
+				
+				Cookie cookie = new Cookie("authToken", null);
+				cookie.setHttpOnly(true);
+				cookie.setSecure(false);
+				cookie.setPath("/");
+				cookie.setMaxAge(0);
+				response.addCookie(cookie);
+				
+				return ResponseEntity.ok("Logout Successfully");
+				
+			}
+			catch(Exception e) {
+				return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
 			}
 		}
 		
