@@ -1,31 +1,32 @@
-# 🏆 Sportify Backend – Spring Boot
+# 🏆 Sportify Backend – Spring Boot E-Commerce API
 
-**Sportify Backend** is a RESTful sports management API built using **Spring Boot**.  
-It provides endpoints to manage players, teams, matches, and user data using a clean layered architecture.  
-This project was created to practice backend development, REST API design, and Spring Boot concepts.
+**Sportify Backend** is an e-commerce backend application built using **Spring Boot**, designed for selling sports items online.  
+It provides REST APIs for managing products, users, cart, wishlist, and orders with a secure and scalable architecture.  
+This project was created to practice Spring Boot development and learn how real-world e-commerce systems work.
 
 ---
 
 ## ⭐ Features
-- RESTful API for sports management  
-- Player, Team, and Match modules  
-- CRUD operations for all entities  
+- Full e-commerce backend for sports products  
+- Product listing, filtering, and search  
+- Add to cart / remove from cart  
+- Wishlist module  
+- Orders & checkout flow  
+- User registration & login (JWT optional)  
 - Layered architecture (Controller → Service → Repository)  
-- Exception handling  
-- Uses Spring Data JPA  
-- MySQL / H2 database support  
-- Cross-Origin support for frontend integration  
+- MySQL database integration  
+- Proper exception handling  
 
 ---
 
 ## 🚀 Technologies Used
 - **Java 17+**  
 - **Spring Boot**  
-- **Spring Web (REST APIs)**  
+- **Spring Web (REST)**  
 - **Spring Data JPA**  
-- **MySQL / H2**  
+- **MySQL / H2 DB**  
 - **Maven**  
-- **Lombok** (optional)
+- **Lombok** (optional)  
 
 ---
 
@@ -36,6 +37,7 @@ Sportify-Backend/
 │   ├── service/  
 │   ├── repository/  
 │   ├── model/  
+│   ├── dto/  
 │   └── SportifyApplication.java  
 │── src/main/resources/  
 │   ├── application.properties  
@@ -45,24 +47,35 @@ Sportify-Backend/
 ---
 
 ## 🔌 API Endpoints (Examples)
-### Players  
-- `GET /players` – Get all players  
-- `POST /players` – Add a new player  
-- `PUT /players/{id}` – Update a player  
-- `DELETE /players/{id}` – Delete a player  
 
-### Teams  
-- `GET /teams`  
-- `POST /teams`  
+### 🛍️ Products  
+- `GET /products` – Get all products  
+- `GET /products/{id}` – Get product details  
+- `POST /products` – Add product (Admin)  
+- `PUT /products/{id}` – Update product  
+- `DELETE /products/{id}` – Delete product  
 
-### Matches  
-- `GET /matches`  
-- `POST /matches`  
+### 👤 Users  
+- `POST /auth/register` – Register user  
+- `POST /auth/login` – Login  
+
+### 🛒 Cart  
+- `POST /cart/add` – Add product to cart  
+- `GET /cart/{userId}` – Get user cart  
+- `DELETE /cart/remove/{id}` – Remove item  
+
+### ❤️ Wishlist  
+- `POST /wishlist/add`  
+- `GET /wishlist/{userId}`  
+
+### 📦 Orders  
+- `POST /orders/create`  
+- `GET /orders/{userId}`  
 
 ---
 
 ## ⚙️ How to Run
-1. Clone the project  
-2. Import into **IntelliJ / Eclipse**  
-3. Configure database in `application.properties`  
-4. Run using:  
+1. Clone the repository  
+2. Open in IntelliJ / Eclipse  
+3. Set database details in `application.properties`  
+4. Run command:  
